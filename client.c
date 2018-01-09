@@ -69,20 +69,19 @@ int main(int argc , char *argv[]){
             scanf("%s", aux2);
             strcat(aux, aux2);
             strcat(aux, "|");
-            fflush(stdin);
 
             printf("\nInsira a placa do carro: ");
             scanf("%s", aux2);
             strcat(aux, aux2);
-            strcat(aux, "|1|");
-            fflush(stdin);
 
+            strcat(aux, "|1|\n");
 
             system("clear");
             printf("Carro Inserido!\n");
 
 
-            printf("%s", aux);
+            printf("%s\n", aux);
+            //printf("%d\n", strlen(aux));
             send(sock, aux, strlen(aux), 0);
 
             //free(aux);
