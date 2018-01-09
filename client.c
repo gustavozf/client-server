@@ -25,7 +25,7 @@ int main(int argc , char *argv[]){
         return 1;
     }
 
-    puts("Conectado\n");
+    puts("Connected\n");
     printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n");
 
     //Conexão contínua
@@ -33,12 +33,21 @@ int main(int argc , char *argv[]){
         printf("Escolha uma função: \n");
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
-        scanf("%s" , mensagem);
+        scanf("%d" , &escolha);
 
 
-        if( send(sock , mensagem , sizeof(int) , 0) < 0){
+        if( send(sock , escolha , sizeof(int) , 0) < 0){
             puts("Falha ao enviar");
             return 1;
+        }
+
+        // Alugar um carro
+        if(escolha-1){
+
+
+        // Registrar um carro
+        } else {
+
         }
 
         if( recv(sock , respServidor , 2000 , 0) < 0){

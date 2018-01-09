@@ -84,9 +84,16 @@ int main(int argc , char *argv[])
  * */
 void *connection_handler(void *socket_desc)
 {
+    FILE *memoria;
+
+    //Abre o arquivo de memoria compartilhada
+    if(!(memoria = fopen("memoria.txt", "r+"))){
+        memoria = fopen("memoria.txt", "w+");
+    }
+
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
-    int read_size;
+    int read_size, escolha;
     char *message , client_message[2000];
      
     //Send some messages to the client
@@ -97,20 +104,31 @@ void *connection_handler(void *socket_desc)
     write(sock , message , strlen(message));
      
     //Receive a message from client
-    while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
+    while( (read_size = recv(sock , escolha , 4 , 0)) > 0 )
     {
-        /*switch(client_message){
+        switch(escolha){
             case 1: 
+                    message = "Insira os dados: ";
+                    send(sock, message, strlen(message), 0);
+                    recv(sock, client_message, 2000, 0);
+
+                    fseek(memoria, 0, SEEK_END);
+                    write(memoria, client_message, strlen(client_message));
+                    
+                    message = "Carro registrado!";
+                    send(sock, message, strlen(message), 0);
+
                     break;
             
-            case 2:
-                    break;
+            //case 2:
+            //        break;
             
             default:
                     break;
-        }*/
+        }
     
         //Send the message back to client
+        fclose(memoria);
         write(sock , client_message , strlen(client_message));
     }
      
@@ -128,8 +146,4 @@ void *connection_handler(void *socket_desc)
     free(socket_desc);
      
     return 0;
-}
-
-char* registraCarro(){
-    
 }
