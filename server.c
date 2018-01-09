@@ -84,7 +84,7 @@ int main(int argc , char *argv[])
  * */
 void *connection_handler(void *socket_desc)
 {
-    FILE *memoria, *aux;
+    FILE *memoria;
 
     //Abre o arquivo de memoria compartilhada
     if(!(memoria = fopen("memoria.txt", "r+"))){
@@ -96,7 +96,6 @@ void *connection_handler(void *socket_desc)
     int read_size;
     char escolha;
     char *message , client_message[2000];
-    char nome[10], marca[15], placa[8];
      
     //Send some messages to the client
     message = "Greetings! I am your connection handler\n";
@@ -115,15 +114,13 @@ void *connection_handler(void *socket_desc)
                     recv(sock, client_message, 2000, 0);
 
                     fseek(memoria, 0, SEEK_END);
-                    aux = memoria;
+                
                     write(memoria, client_message, strlen(client_message));
                         
                 
-                    //message = "Carro registrado!";
-                    fscanf(aux, %s, %s, %s, nome, marca, placa);
+                    message = "Carro registrado!";
                         
-                     
-                    send(sock, nome, strlen(message), 0);
+                    send(sock, message, strlen(message), 0);
 
                     break;
             
