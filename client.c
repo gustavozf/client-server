@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
 #include<arpa/inet.h>
 #include<sys/socket.h>
@@ -6,9 +7,9 @@
 int main(int argc , char *argv[]){
 
     int sock;
-    char escolha[2];
+    char escolha[2], buffer[2000];
     struct sockaddr_in server;
-    char mensagem[1000] , respServidor[2000], aux[2000];
+    char mensagem[1000] , respServidor[2000], *aux, *aux2;
 
     //Criação socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -26,7 +27,6 @@ int main(int argc , char *argv[]){
         return 1;
     }
 
-    puts("Connected\n");
     printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n");
 
     //Conexão contínua
@@ -46,7 +46,7 @@ int main(int argc , char *argv[]){
             break;
         }
 
-        printf(respServidor);
+        puts(respServidor);
 
         // Alugar um carro
         if(!(strcmp(escolha, "2"))){
@@ -54,16 +54,41 @@ int main(int argc , char *argv[]){
 
         // Registrar um carro
         } else {
-            printf("\nInsira o nome: ");
+            aux = malloc(sizeof(char)*2000);
+            aux[0] = '\0';
+            aux2 = malloc(sizeof(char)*2000);
+            aux2[0] = '\0';
+
+            printf("\nInsira o nome do carro: ");
             scanf("%s", aux);
+            strcat(aux, "|");
+
+            printf("\nInsira a marca do carro: ");
+            scanf("%s", aux2);
+            strcat(aux, aux2);
+            strcat(aux, "|");
+            
+            printf("\nInsira a placa do carro: ");
+            scanf("%s", aux2);
+            strcat(aux, aux2);
+            strcat(aux, "|1|");
+            
+
+
+            system("clear");
+            printf("Carro Inserido!\n");
+
+
+            printf("%s", aux);
             send(sock, aux, strlen(aux), 0);
+
+            free(aux);
+            free(aux2);
+
             recv(sock, respServidor , 2000, 0);
-            printf(respServidor);
 
         }
 
-        puts("Resposta do servidor: ");
-        puts(respServidor);
     }
 
     close(sock);

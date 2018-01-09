@@ -86,52 +86,49 @@ void *connection_handler(void *socket_desc)
 {
     FILE *memoria, *aux;
 
-    //Abre o arquivo de memoria compartilhada
-    if(!(memoria = fopen("memoria.txt", "r+"))){
-        memoria = fopen("memoria.txt", "w+");
-    }
-
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
-    char escolha;
-    char *message , client_message[2000];
+    char escolha[2];
+    char *message , *client_message;
     char nome[10], marca[15], placa[8];
      
     //Send some messages to the client
-    message = "Greetings! I am your connection handler\n";
+    /*message = "Greetings! I am your connection handler\n";
     write(sock , message , strlen(message));
      
     message = "Now type something and i shall repeat what you type \n";
     write(sock , message , strlen(message));
-     
+    */
+
     //Receive a message from client
-    while( (read_size = recv(sock , escolha , 1 , 0)) > 0 )
+    while( (read_size = recv(sock , escolha , 2 , 0)) > 0 )
     {
-        switch(escolha){
-            case '1': 
+        //Abre o arquivo de memoria compartilhada
+        if(!(memoria = fopen("memoria.txt", "r+"))){
+            memoria = fopen("memoria.txt", "w+");
+        }
+
+        if(!strcmp(escolha, "1")){
                     message = "Insira os dados: ";
                     send(sock, message, strlen(message), 0);
+                    client_message = malloc(sizeof(char)*2000);
+                    client_message[0] = '\0';
                     recv(sock, client_message, 2000, 0);
 
                     fseek(memoria, 0, SEEK_END);
                     aux = memoria;
-                    write(memoria, client_message, strlen(client_message));
-                        
-                
-                    //message = "Carro registrado!";
-                    fscanf(aux, %s, %s, %s, nome, marca, placa);
-                        
-                     
-                    send(sock, nome, strlen(message), 0);
+                    
+                    puts(client_message);
+                    fprintf(memoria, "%s" ,client_message);
+            
 
-                    break;
-            
-            //case '2':
-            //        break;
-            
-            default:
-                    break;
+                    printf("Carro Inserido!");
+
+                    message = "Carro registrado!";
+                    //fscanf(aux, %s, %s, %s, nome, marca, placa);     
+                    free(client_message);
+                    send(sock, nome, strlen(message), 0);
         }
     
         //Send the message back to client
