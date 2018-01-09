@@ -8,7 +8,7 @@
  
 int main(int argc , char *argv[])
 {
-    int sock;
+    int sock, escolha;
     struct sockaddr_in server;
     char message[1000] , server_reply[2000];
      
@@ -32,15 +32,18 @@ int main(int argc , char *argv[])
     }
      
     puts("Connected\n");
+    printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n")
      
     //keep communicating with server
     while(1)
     {
-        printf("Enter message : ");
-        scanf("%s" , message);
+        printf("Escolha uma função: \n");
+        printf("\t1- Registrar um carro\n");
+        printf("\t2- Alugar um carro\n");
+        scanf("%d" , &escolha);
          
         //Send some data
-        if( send(sock , message , strlen(message) , 0) < 0)
+        if( send(sock , escolha , sizeof(int) , 0) < 0)
         {
             puts("Send failed");
             return 1;
