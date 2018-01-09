@@ -84,14 +84,19 @@ int main(int argc , char *argv[])
  * */
 void *connection_handler(void *socket_desc)
 {
-    FILE *memoria, *aux;
+    FILE *memoria;
 
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
+<<<<<<< HEAD
     char escolha[2];
     char *message , *client_message;
     char nome[10], marca[15], placa[8];
+=======
+    char escolha;
+    char *message , client_message[2000];
+>>>>>>> 3111a901afd25747c53581a5b8a96953063ad513
      
     //Send some messages to the client
     /*message = "Greetings! I am your connection handler\n";
@@ -117,10 +122,25 @@ void *connection_handler(void *socket_desc)
                     recv(sock, client_message, 2000, 0);
 
                     fseek(memoria, 0, SEEK_END);
+<<<<<<< HEAD
                     aux = memoria;
                     
                     puts(client_message);
                     fprintf(memoria, "%s" ,client_message);
+=======
+                
+                    write(memoria, client_message, strlen(client_message));
+                        
+                
+                    message = "Carro registrado!";
+                        
+                    send(sock, message, strlen(message), 0);
+
+                    break;
+            
+            //case '2':
+            //        break;
+>>>>>>> 3111a901afd25747c53581a5b8a96953063ad513
             
 
                     printf("Carro Inserido!");
