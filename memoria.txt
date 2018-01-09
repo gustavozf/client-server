@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-Fiat|Linea|asdasd|1|a|a|a|1||hb20|hyundai|asdads|1|
-=======
-asd|asd|asd|1|q|q|q|1|er|er|er|1|sdf|wer|hdf|1|q|w|e|1|
->>>>>>> 996101a28eedb925497eb50e70592d2da329951b
+Linea|Fiat|12123|1|a|a|a|1|hb20|hyundai|123123|1|b|b|b|1|Punto|Linea|12313|1|Mas|veja|so|1|Eita|Mermao|que|1|

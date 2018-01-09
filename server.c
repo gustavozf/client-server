@@ -17,7 +17,7 @@ void *connection_handler(void *);
 
 int main(int argc , char *argv[])
 {
-    //sem_init(&semaforo, 0, 1);
+    sem_init(&semaforo, 0, 1);
 
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
@@ -92,21 +92,13 @@ void *connection_handler(void *socket_desc)
 
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
-    int read_size;
+    int read_size, val;
     char escolha[2];
     char *message , *client_message, *client_message_aux;
 
-    //Send some messages to the client
-    /*message = "Greetings! I am your connection handler\n";
-    write(sock , message , strlen(message));
-
-    message = "Now type something and i shall repeat what you type \n";
-    write(sock , message , strlen(message));
-    */
-
     //Receive a message from client
     while( (read_size = recv(sock , escolha , 2 , 0)) > 0 ){
-        //sem_wait(&semaforo);
+        sem_wait(&semaforo);
 
         //Abre o arquivo de memoria compartilhada
         if(!(memoria = fopen("memoria.txt", "r+"))){
@@ -114,6 +106,7 @@ void *connection_handler(void *socket_desc)
         }
 
         if(!strcmp(escolha, "1")){
+                    sem_getvalue(&semaforo, &val);
                     message = "Insira os dados: ";
                     send(sock, message, strlen(message), 0);
                     client_message = malloc(sizeof(char)*2000);
@@ -133,11 +126,14 @@ void *connection_handler(void *socket_desc)
                     //fscanf(aux, %s, %s, %s, nome, marca, placa);
                     free(client_message);
                     send(sock, message, strlen(message), 0);
+
         }
 
         //Send the message back to client
         fclose(memoria);
         write(sock , client_message , strlen(client_message));
+
+        sem_post(&semaforo);
     }
 
     if(read_size == 0)
