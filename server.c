@@ -1,84 +1,71 @@
 /*
     C socket server example, handles multiple clients using threads
 */
- 
+
 #include<stdio.h>
-#include<string.h>    //strlen
-#include<stdlib.h>    //strlen
+#include<string.h>
+#include<stdlib.h>
 #include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
-#include<pthread.h> //for threading , link with lpthread
- 
-//the thread function
+#include<arpa/inet.h>
+#include<unistd.h>
+#include<pthread.h>
+
+#define PORT 8888
+#define MAX_FILA 3
+
+// Função executada ao receber uma requisição
 void *connection_handler(void *);
- 
-int main(int argc , char *argv[])
-{
-    int socket_desc , client_sock , c , *new_sock;
-    struct sockaddr_in server , client;
-     
-    //Create socket
+
+int main(int argc , char **argv){
+    int socket_desc, client_sock, c, *new_sock;
+    struct sockaddr_in server, client;
+
+    // Cria o socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1)
-    {
-        printf("Could not create socket");
+    if (socket_desc == -1){
+        printf("Não foi possível criar o socket");
     }
-    puts("Socket created");
-     
-    //Prepare the sockaddr_in structure
+    puts("-Socket criado");
+
+    // Configura o servidor
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
-     
-    //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-    {
-        //print the error message
-        perror("bind failed. Error");
+    server.sin_port = htons(PORT);
+
+    // Faz a ligação do socket ao servidor
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0){
+        perror("Erro ao realizar vínculo");
         return 1;
     }
-    puts("bind done");
-     
-    //Listen
-    listen(socket_desc , 3);
-     
-    //Accept and incoming connection
-    puts("Waiting for incoming connections...");
+    puts("-Vínculo terminado");
+
+    listen(socket_desc , MAX_FILA); //Começa a receber solicitações
+    puts("-Aguardando conexões...");
+
     c = sizeof(struct sockaddr_in);
-     
-     
-    //Accept and incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
-    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
-    {
-        puts("Connection accepted");
-         
+    while((client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c))){
+        puts("Conexão recebida");
+
         pthread_t sniffer_thread;
         new_sock = malloc(1);
         *new_sock = client_sock;
-         
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
-        {
-            perror("could not create thread");
+
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0){
+            perror("Não foi possível criar thread");
             return 1;
         }
-         
-        //Now join the thread , so that we dont terminate before the thread
-        //pthread_join( sniffer_thread , NULL);
-        puts("Handler assigned");
+
+        puts("-Manipulador designado");
     }
-     
-    if (client_sock < 0)
-    {
-        perror("accept failed");
+
+    if(client_sock < 0){
+        perror("Erro na conexão");
         return 1;
     }
-     
+
     return 0;
 }
- 
+
 /*
  * This will handle connection for each client
  * */
@@ -96,17 +83,18 @@ void *connection_handler(void *socket_desc)
     int read_size;
     char escolha[2];
     char *message , client_message[2000];
-     
+
     //Send some messages to the client
     message = "Greetings! I am your connection handler\n";
     write(sock , message , strlen(message));
-     
+
     message = "Now type something and i shall repeat what you type \n";
     write(sock , message , strlen(message));
-     
+
     //Receive a message from client
     while( (read_size = recv(sock , escolha , 2 , 0)) > 0 )
     {
+
         if(!strcmp(escolha, "1")){
                 message = "Insira os dados: ";
                 send(sock, message, strlen(message), 0);
@@ -129,7 +117,7 @@ void *connection_handler(void *socket_desc)
         fclose(memoria);
         write(sock , client_message , strlen(client_message));
     }
-     
+
     if(read_size == 0)
     {
         puts("Cliente desconectado");
@@ -139,9 +127,9 @@ void *connection_handler(void *socket_desc)
     {
         perror("recv failed");
     }
-         
+
     //Free the socket pointer
     free(socket_desc);
-     
+
     return 0;
 }
