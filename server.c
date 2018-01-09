@@ -94,7 +94,7 @@ void *connection_handler(void *socket_desc)
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size;
-    char escolha;
+    char escolha[2];
     char *message , client_message[2000];
      
     //Send some messages to the client
@@ -105,28 +105,25 @@ void *connection_handler(void *socket_desc)
     write(sock , message , strlen(message));
      
     //Receive a message from client
-    while( (read_size = recv(sock , escolha , 1 , 0)) > 0 )
+    while( (read_size = recv(sock , escolha , 2 , 0)) > 0 )
     {
-        switch(escolha){
-            case '1': 
-                    message = "Insira os dados: ";
-                    send(sock, message, strlen(message), 0);
-                    recv(sock, client_message, 2000, 0);
+        if(!strcmp(escolha, "1")){
+                message = "Insira os dados: ";
+                send(sock, message, strlen(message), 0);
+                recv(sock, client_message, 2000, 0);
 
-                    fseek(memoria, 0, SEEK_END);
-                    write(memoria, client_message, strlen(client_message));
+                fseek(memoria, 0, SEEK_END);
+                write(memoria, client_message, strlen(client_message));
                     
-                    message = "Carro registrado!";
-                    send(sock, message, strlen(message), 0);
+                message = "Carro registrado!";
+                send(sock, message, strlen(message), 0);
 
-                    break;
+        }
+                   
             
             //case '2':
             //        break;
             
-            default:
-                    break;
-        }
     
         //Send the message back to client
         fclose(memoria);

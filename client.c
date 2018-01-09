@@ -6,7 +6,7 @@
 int main(int argc , char *argv[]){
 
     int sock;
-    char escolha;
+    char escolha[2];
     struct sockaddr_in server;
     char mensagem[1000] , respServidor[2000], aux[2000];
 
@@ -34,9 +34,9 @@ int main(int argc , char *argv[]){
         printf("Escolha uma função: \n");
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
-        scanf("%c" , &escolha);
+        scanf("%s" , escolha);
 
-        if( send(sock , escolha , 1 , 0) < 0){
+        if( send(sock , escolha , 2 , 0) < 0){
             puts("Falha ao enviar");
             return 1;
         }
@@ -49,7 +49,7 @@ int main(int argc , char *argv[]){
         printf(respServidor);
 
         // Alugar um carro
-        if(escolha == '2'){
+        if(!(strcmp(escolha, "2"))){
             printf("Sendo feito");
 
         // Registrar um carro
