@@ -1,65 +1,54 @@
-/*
-    C ECHO client example using sockets
-*/
-#include<stdio.h> //printf
-#include<string.h>    //strlen
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
- 
-int main(int argc , char *argv[])
-{
+#include<stdio.h>
+#include<string.h>
+#include<arpa/inet.h>
+#include<sys/socket.h>
+
+int main(int argc , char *argv[]){
+
     int sock, escolha;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
-     
-    //Create socket
+    char mensagem[1000] , respServidor[2000];
+
+    //Criação socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
-    {
-        printf("Could not create socket");
-    }
-    puts("Socket created");
-     
+           printf("Não foi possível criar o socket");
+    puts("Socket foi criado");
+
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
     server.sin_family = AF_INET;
     server.sin_port = htons( 8888 );
- 
-    //Connect to remote server
-    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
-    {
-        perror("connect failed. Error");
+
+  //Conecção
+    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
+        perror("Conecção falhou!");
         return 1;
     }
-     
+
     puts("Connected\n");
     printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n")
-     
-    //keep communicating with server
-    while(1)
-    {
+
+    //Conecção contínua
+    while(1){
         printf("Escolha uma função: \n");
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
         scanf("%d" , &escolha);
-         
-        //Send some data
-        if( send(sock , escolha , sizeof(int) , 0) < 0)
-        {
-            puts("Send failed");
+
+        if( send(sock , escolha , sizeof(int) , 0) < 0){
+            puts("Falha ao enviar");
             return 1;
         }
-         
-        //Receive a reply from the server
-        if( recv(sock , server_reply , 2000 , 0) < 0)
-        {
-            puts("recv failed");
+
+        if( recv(sock , respServidor , 2000 , 0) < 0){
+            puts("Falha");
             break;
         }
-         
-        puts("Server reply :");
-        puts(server_reply);
+
+        puts("Resposta do servidor: ");
+        puts(respServidor);
     }
-     
+
     close(sock);
     return 0;
 }
