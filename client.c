@@ -19,23 +19,24 @@ int main(int argc , char *argv[]){
     server.sin_family = AF_INET;
     server.sin_port = htons( 8888 );
 
-  //Conecção
+  //Conexão
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
         perror("Conecção falhou!");
         return 1;
     }
 
-    puts("Connected\n");
-    printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n")
+    puts("Conectado\n");
+    printf("SUPER SISTEMA DE ALUGUEL DE CARROS\n");
 
-    //Conecção contínua
+    //Conexão contínua
     while(1){
         printf("Escolha uma função: \n");
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
-        scanf("%d" , &escolha);
+        scanf("%s" , mensagem);
 
-        if( send(sock , escolha , sizeof(int) , 0) < 0){
+
+        if( send(sock , mensagem , sizeof(int) , 0) < 0){
             puts("Falha ao enviar");
             return 1;
         }
