@@ -5,9 +5,10 @@
 
 int main(int argc , char *argv[]){
 
-    int sock, escolha;
+    int sock;
+    char escolha;
     struct sockaddr_in server;
-    char mensagem[1000] , respServidor[2000];
+    char mensagem[1000] , respServidor[2000], aux[2000];
 
     //Criação socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -33,26 +34,32 @@ int main(int argc , char *argv[]){
         printf("Escolha uma função: \n");
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
-        scanf("%d" , &escolha);
+        scanf("%c" , &escolha);
 
-
-        if( send(sock , escolha , sizeof(int) , 0) < 0){
+        if( send(sock , escolha , 1 , 0) < 0){
             puts("Falha ao enviar");
             return 1;
-        }
-
-        // Alugar um carro
-        if(escolha-1){
-
-
-        // Registrar um carro
-        } else {
-
         }
 
         if( recv(sock , respServidor , 2000 , 0) < 0){
             puts("Falha");
             break;
+        }
+
+        printf(respServidor);
+
+        // Alugar um carro
+        if(escolha == '2'){
+            printf("Sendo feito");
+
+        // Registrar um carro
+        } else {
+            printf("\nInsira o nome: ");
+            scanf("%s", aux);
+            send(sock, aux, strlen(aux), 0);
+            recv(sock, respServidor , 2000, 0);
+            printf(respServidor);
+
         }
 
         puts("Resposta do servidor: ");

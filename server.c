@@ -93,7 +93,8 @@ void *connection_handler(void *socket_desc)
 
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
-    int read_size, escolha;
+    int read_size;
+    char escolha;
     char *message , client_message[2000];
      
     //Send some messages to the client
@@ -104,10 +105,10 @@ void *connection_handler(void *socket_desc)
     write(sock , message , strlen(message));
      
     //Receive a message from client
-    while( (read_size = recv(sock , escolha , 4 , 0)) > 0 )
+    while( (read_size = recv(sock , escolha , 1 , 0)) > 0 )
     {
         switch(escolha){
-            case 1: 
+            case '1': 
                     message = "Insira os dados: ";
                     send(sock, message, strlen(message), 0);
                     recv(sock, client_message, 2000, 0);
@@ -120,7 +121,7 @@ void *connection_handler(void *socket_desc)
 
                     break;
             
-            //case 2:
+            //case '2':
             //        break;
             
             default:
