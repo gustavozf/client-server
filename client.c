@@ -9,13 +9,12 @@ int main(int argc , char *argv[]){
     int sock;
     char escolha[2], buffer[2000];
     struct sockaddr_in server;
-    char mensagem[1000] , respServidor[2000], *aux, *aux2;
+    char mensagem[1000] , respServidor[2000], aux[2000], aux2[2000];
 
     //Criação socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
            printf("Não foi possível criar o socket");
-    puts("Socket foi criado");
 
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
     server.sin_family = AF_INET;
@@ -54,25 +53,29 @@ int main(int argc , char *argv[]){
 
         // Registrar um carro
         } else {
-            aux = malloc(sizeof(char)*2000);
-            aux[0] = '\0';
-            aux2 = malloc(sizeof(char)*2000);
-            aux2[0] = '\0';
+            //aux = malloc(sizeof(char)*2000);
+            //aux[0] = '\0';
+            //aux2 = malloc(sizeof(char)*2000);
+            //aux2[0] = '\0';
 
+            fflush(stdin);
             printf("\nInsira o nome do carro: ");
             scanf("%s", aux);
+            fflush(stdin);
             strcat(aux, "|");
 
             printf("\nInsira a marca do carro: ");
+            fflush(stdin);
             scanf("%s", aux2);
             strcat(aux, aux2);
             strcat(aux, "|");
-            
+            fflush(stdin);
+
             printf("\nInsira a placa do carro: ");
             scanf("%s", aux2);
             strcat(aux, aux2);
             strcat(aux, "|1|");
-            
+            fflush(stdin);
 
 
             system("clear");
@@ -82,8 +85,8 @@ int main(int argc , char *argv[]){
             printf("%s", aux);
             send(sock, aux, strlen(aux), 0);
 
-            free(aux);
-            free(aux2);
+            //free(aux);
+            //free(aux2);
 
             recv(sock, respServidor , 2000, 0);
 

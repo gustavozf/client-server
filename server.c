@@ -9,12 +9,15 @@
 #include<arpa/inet.h> //inet_addr
 #include<unistd.h>    //write
 #include<pthread.h> //for threading , link with lpthread
- 
-//the thread function
+#include <semaphore.h>
+
+sem_t semaforo;
 void *connection_handler(void *);
- 
+
 int main(int argc , char *argv[])
 {
+    //sem_init(&semaforo, 0, 1);
+
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
      
@@ -101,31 +104,32 @@ void *connection_handler(void *socket_desc)
     */
 
     //Receive a message from client
-    while( (read_size = recv(sock , escolha , 2 , 0)) > 0 )
-    {
+    while( (read_size = recv(sock , escolha , 2 , 0)) > 0 ){
+        //sem_wait(&semaforo);
+
         //Abre o arquivo de memoria compartilhada
         if(!(memoria = fopen("memoria.txt", "r+"))){
             memoria = fopen("memoria.txt", "w+");
         }
 
         if(!strcmp(escolha, "1")){
-                    message = "Insira os dados: ";
-                    send(sock, message, strlen(message), 0);
-                    client_message = malloc(sizeof(char)*2000);
-                    client_message[0] = '\0';
-                    recv(sock, client_message, 2000, 0);
-
-                    fseek(memoria, 0, SEEK_END);
-                    
-                    puts(client_message);
-                    fprintf(memoria, "%s" ,client_message);      
-
-                    printf("Carro Inserido!");
-
-                    message = "Carro registrado!";
-                    //fscanf(aux, %s, %s, %s, nome, marca, placa);     
-                    free(client_message);
-                    send(sock, message, strlen(message), 0);
+            message = "Insira os dados: ";
+            send(sock, message, strlen(message), 0);
+            client_message = malloc(sizeof(char)*2000);
+            //client_message[0] = '\0';
+            recv(sock, client_message, 2000, 0);
+            fseek(memoria, 0, SEEK_END);
+        
+            puts(client_message);
+            //fprintf(memoria, "%s" ,client_message);      
+            fwrite(client_message, strlen(client_message)-1, 1, memoria);
+            fprintf(memoria, "%s", client_message);
+            
+            printf("Carro Inserido!");
+            message = "Carro registrado!";
+            //fscanf(aux, %s, %s, %s, nome, marca, placa);     
+            free(client_message);
+            send(sock, message, strlen(message), 0);
         }
     
         //Send the message back to client
