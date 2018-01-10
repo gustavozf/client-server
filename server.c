@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <string.h>    
-#include <stdlib.h>    
+#include <string.h>
+#include <stdlib.h>
 #include <sys/socket.h>
-#include <arpa/inet.h> 
-#include <unistd.h>    
+#include <arpa/inet.h>
+#include <unistd.h>
 #include <sys/types.h>
-#include <pthread.h> 
+#include <pthread.h>
 #include <semaphore.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -31,7 +31,7 @@ int main(int argc , char *argv[])
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons( 2080 );
 
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
@@ -103,54 +103,104 @@ void *connection_handler(void *socket_desc){
             memoria = fopen("memoria.txt", "w+");
         }
 
+        printf("%s\n", escolha);
+
         if(!strcmp(escolha, "1")){
-                    sem_getvalue(&semaforo, &val);
-                    message = "Insira os dados: ";
-                    send(sock, message, strlen(message), 0);
-                    client_message = malloc(sizeof(char)*2000);
-                    client_message[0] = '\0';
-                    recv(sock, client_message, 2000, 0);
-                    //client_message_aux = strtok(client_message, "\n");
-                    //printf("%d\n", strlen(client_message_aux));
+            sem_getvalue(&semaforo, &val);
+            message = "Insira os dados: ";
+            send(sock, message, strlen(message), 0);
+            client_message = malloc(sizeof(char)*2000);
+            client_message[0] = '\0';
+            recv(sock, client_message, 2000, 0);
+            //client_message_aux = strtok(client_message, "\n");
+            //printf("%d\n", strlen(client_message_aux));
 
-                    //Utilizando PIPE
-                    if(pipe(fd)<0) {
-                        perror("Pipe");
-                        return -1 ;
-                    }
-                    if((pid = fork()) < 0){
-                        perror("Erro no fork!\n");
-                        exit(1);
-                    }
-                    //Processo Pai
-                    if(pid > 0){
-                        client_message[strlen(client_message) - 1] = '\0';
-                        fd0 = open(myfifo, O_WRONLY);
-                        write(fd0, client_message, strlen(client_message));
-                        close(fd0);
-                    }
-                    //Processo filho
-                    else{
-                        fd1 = open(myfifo, O_RDONLY);
-                        read(fd1, dados, 2000);
-                        int tamDados = strlen(dados);
-                        close(fd1);
+            //Utilizando PIPE
+            if(pipe(fd)<0) {
+                perror("Pipe");
+                return -1 ;
+            }
+            if((pid = fork()) < 0){
+                perror("Erro no fork!\n");
+                exit(1);
+            }
+            //Processo Pai
+            if(pid > 0){
+                client_message[strlen(client_message) - 1] = '\0';
+                fd0 = open(myfifo, O_WRONLY);
+                write(fd0, client_message, strlen(client_message));
+                close(fd0);
+            }
+            //Processo filho
+            else{
+                fd1 = open(myfifo, O_RDONLY);
+                read(fd1, dados, 2000);
+                int tamDados = strlen(dados);
+                close(fd1);
 
-                        fseek(memoria, 0, SEEK_END);
+                fseek(memoria, 0, SEEK_END);
 
-                        //puts(client_message_aux);
-                        fwrite(&tamDados, sizeof(int), 1, memoria);
-                        fwrite(dados, strlen(dados), 1, memoria);
-                        //fprintf(memoria, "%s" ,client_message_aux);
+                //puts(client_message_aux);
+                fwrite(&tamDados, sizeof(int), 1, memoria);
+                fwrite(dados, strlen(dados), 1, memoria);
+                //fprintf(memoria, "%s" ,client_message_aux);
 
-                        printf("Carro Inserido!");
+                printf("Carro Inserido!");
 
-                        message = "Carro registrado!";
-                        //fscanf(aux, %s, %s, %s, nome, marca, placa);
-                        free(client_message);
-                        send(sock, message, strlen(message), 0);
-                        exit(0);
-                    }   
+                message = "Carro registrado!";
+                //fscanf(aux, %s, %s, %s, nome, marca, placa);
+                free(client_message);
+                send(sock, message, strlen(message), 0);
+                exit(0);
+            }
+        }
+        else if(escolha[0] == '2'){
+            char* linha = NULL;
+            char mes[5000];
+            char cabo[] = "Carro alugado!\n";
+            char car[2];
+            int i, tam;
+            size_t size = 0;
+            fseek(memoria, 0, SEEK_SET);
+
+            while(getline(&linha, &size, memoria) != -1){
+                strcat(mes, linha);
+            }
+
+            send(sock, mes, strlen(mes), 0);
+            recv(sock, car, 2, 0);
+
+            int j = 0;
+            for(i = 0; i < atoi(car)-9; i++){
+                while(mes[j] != '|'){
+                    putchar(mes[j]);
+                    j++;
+                }
+                j++;
+                while(mes[j] != '|'){
+                    putchar(mes[j]);
+                    j++;
+                }
+                j++;
+                while(mes[j] != '|'){
+                    putchar(mes[j]);
+                    j++;
+                }
+                j++;
+                while(mes[j] != '|'){
+                    putchar(mes[j]);
+                    j++;
+                }
+                j++;
+            }
+            mes[j-2] = '0';
+            fclose(memoria);
+            memoria = fopen("memoria.txt", "w+");
+            fwrite(mes, sizeof(char), strlen(mes), memoria);
+            fclose(memoria);
+            memoria = fopen("memoria.txt", "r+");
+
+            send(sock, cabo, strlen(cabo), 0);
         }
 
         //Send the message back to client

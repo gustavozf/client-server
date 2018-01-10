@@ -18,7 +18,7 @@ int main(int argc , char *argv[]){
 
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
     server.sin_family = AF_INET;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons( 2080 );
 
   //Conexão
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
@@ -50,7 +50,34 @@ int main(int argc , char *argv[]){
 
         // Alugar um carro
         if(!(strcmp(escolha, "2"))){
-            printf("Sendo feito");
+            char* nome, *marca, *placa, *disp, *resp;
+            char car[2];
+            char cabo[16];
+            resp = malloc(sizeof(char) * strlen(respServidor));
+            respServidor[strlen(respServidor)-1] = '\0';
+            strcpy(resp, respServidor);
+            int ind = 10;
+            nome = strtok(&respServidor, "|");
+            while(nome){
+                printf("carro %d\n", ind);
+                printf("nome: %s\n", nome);
+                marca = strtok(NULL, "|");
+                printf("marca: %s\n", marca);
+                placa = strtok(NULL, "|");
+                printf("placa: %s\n", placa);
+                disp = strtok(NULL, "|");
+                printf("disponivel: %s\n", disp);
+                ind++;
+                nome = strtok(NULL, "|");
+                printf("----------------------\n");
+            }
+
+            printf("Digite o carro desejado: ");
+            scanf("%s", &car);
+
+            send(sock, car, 2, 0);
+            recv(sock, cabo, 16, 0);
+            puts(cabo);
 
         // Registrar um carro
         } else {
