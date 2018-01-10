@@ -34,6 +34,7 @@ int main(int argc , char *argv[]){
         printf("\t1- Registrar um carro\n");
         printf("\t2- Alugar um carro\n");
         scanf("%s" , escolha);
+        system("clear");
 
         if( send(sock , escolha , 2 , 0) < 0){
             puts("Falha ao enviar");

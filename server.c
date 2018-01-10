@@ -1,24 +1,19 @@
-/*
-    C socket server example, handles multiple clients using threads
-*/
-
-#include<stdio.h>
-#include<string.h>    //strlen
-#include<stdlib.h>    //strlen
-#include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
-#include<pthread.h> //for threading , link with lpthread
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pthread.h>
 #include <semaphore.h>
 
 sem_t semaforo;
-
 void *connection_handler(void *);
 
-int main(int argc , char *argv[])
-{
+int main(int argc , char *argv[]){
     sem_init(&semaforo, 0, 1);
-
+    int fd[2];
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
 
@@ -46,7 +41,7 @@ int main(int argc , char *argv[])
 
     //Listen
     listen(socket_desc , 3);
-
+    pipe(fd);
     //Accept and incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
@@ -83,18 +78,16 @@ int main(int argc , char *argv[])
     return 0;
 }
 
-/*
- * This will handle connection for each client
- * */
-void *connection_handler(void *socket_desc)
-{
+void *connection_handler(void *socket_desc){
     FILE *memoria;
 
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size, val;
+    int fd[2];
     char escolha[2];
     char *message , *client_message, *client_message_aux;
+    pid_t pid;
 
     //Receive a message from client
     while( (read_size = recv(sock , escolha , 2 , 0)) > 0 ){
@@ -115,6 +108,27 @@ void *connection_handler(void *socket_desc)
                     client_message_aux = strtok(client_message, "\n");
                     //printf("%d\n", strlen(client_message_aux));
 
+                    //Utilizando PIPE
+                    if(pipe(fd)<0) {
+                        perror("Pipe");
+                        //return -1 ;
+                    }
+                    if((pid = fork()) < 0){
+                        perror("Erro no fork!\n");
+                        exit(1);
+                    }
+                    //Processo Pai
+                    if(pid > 0){
+
+                        close(fd[0]); //fecha a leitura do pipe desse lado
+                        exit(0);
+                    }
+                    //Processo filho
+                    else{
+                        close(fd[1]); //fecha a escrita do pipe desse lado
+                        exit(0);
+                    }
+
                     fseek(memoria, 0, SEEK_END);
 
                     //puts(client_message_aux);
@@ -126,7 +140,6 @@ void *connection_handler(void *socket_desc)
                     //fscanf(aux, %s, %s, %s, nome, marca, placa);
                     free(client_message);
                     send(sock, message, strlen(message), 0);
-
         }
 
         //Send the message back to client
@@ -136,13 +149,11 @@ void *connection_handler(void *socket_desc)
         sem_post(&semaforo);
     }
 
-    if(read_size == 0)
-    {
+    if(read_size == 0){
         puts("Cliente desconectado");
         fflush(stdout);
     }
-    else if(read_size == -1)
-    {
+    else if(read_size == -1){
         perror("recv failed");
     }
 
