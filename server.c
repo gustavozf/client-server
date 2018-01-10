@@ -1,26 +1,29 @@
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <string.h>    
+#include <stdlib.h>    
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include <arpa/inet.h> 
+#include <unistd.h>    
 #include <sys/types.h>
-#include <pthread.h>
+#include <pthread.h> 
 #include <semaphore.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 sem_t semaforo;
+
 void *connection_handler(void *);
 
-int main(int argc , char *argv[]){
+int main(int argc , char *argv[])
+{
     sem_init(&semaforo, 0, 1);
-    int fd[2];
+
     int socket_desc , client_sock , c , *new_sock;
     struct sockaddr_in server , client;
 
     //Create socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1)
-    {
+    if (socket_desc == -1){
         printf("Erro ao criar o socket");
     }
     puts("Socket created");
@@ -41,7 +44,6 @@ int main(int argc , char *argv[]){
 
     //Listen
     listen(socket_desc , 3);
-    pipe(fd);
     //Accept and incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
@@ -50,16 +52,14 @@ int main(int argc , char *argv[]){
     //Accept and incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
-    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
-    {
+    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) ){
         puts("Connection accepted");
 
         pthread_t sniffer_thread;
         new_sock = malloc(1);
         *new_sock = client_sock;
 
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
-        {
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0){
             perror("could not create thread");
             return 1;
         }
@@ -69,8 +69,7 @@ int main(int argc , char *argv[]){
         puts("Handler assigned");
     }
 
-    if (client_sock < 0)
-    {
+    if (client_sock < 0){
         perror("accept failed");
         return 1;
     }
@@ -84,10 +83,16 @@ void *connection_handler(void *socket_desc){
     //Get the socket descriptor
     int sock = *(int*)socket_desc;
     int read_size, val;
-    int fd[2];
     char escolha[2];
+    char dados[2000];
     char *message , *client_message, *client_message_aux;
     pid_t pid;
+    char *myfifo = "/tmp/myfifo";
+    int fd0, fd1;
+    int fd[2];
+
+    mkfifo(myfifo, 0666);
+
 
     //Receive a message from client
     while( (read_size = recv(sock , escolha , 2 , 0)) > 0 ){
@@ -105,13 +110,13 @@ void *connection_handler(void *socket_desc){
                     client_message = malloc(sizeof(char)*2000);
                     client_message[0] = '\0';
                     recv(sock, client_message, 2000, 0);
-                    client_message_aux = strtok(client_message, "\n");
+                    //client_message_aux = strtok(client_message, "\n");
                     //printf("%d\n", strlen(client_message_aux));
 
                     //Utilizando PIPE
                     if(pipe(fd)<0) {
                         perror("Pipe");
-                        //return -1 ;
+                        return -1 ;
                     }
                     if((pid = fork()) < 0){
                         perror("Erro no fork!\n");
@@ -119,27 +124,33 @@ void *connection_handler(void *socket_desc){
                     }
                     //Processo Pai
                     if(pid > 0){
-
-                        close(fd[0]); //fecha a leitura do pipe desse lado
-                        exit(0);
+                        client_message[strlen(client_message) - 1] = '\0';
+                        fd0 = open(myfifo, O_WRONLY);
+                        write(fd0, client_message, strlen(client_message));
+                        close(fd0);
                     }
                     //Processo filho
                     else{
-                        close(fd[1]); //fecha a escrita do pipe desse lado
+                        fd1 = open(myfifo, O_RDONLY);
+                        read(fd1, dados, 2000);
+                        int tamDados = strlen(dados);
+                        close(fd1);
+
+                        fseek(memoria, 0, SEEK_END);
+
+                        //puts(client_message_aux);
+                        fwrite(&tamDados, sizeof(int), 1, memoria);
+                        fwrite(dados, strlen(dados), 1, memoria);
+                        //fprintf(memoria, "%s" ,client_message_aux);
+
+                        printf("Carro Inserido!");
+
+                        message = "Carro registrado!";
+                        //fscanf(aux, %s, %s, %s, nome, marca, placa);
+                        free(client_message);
+                        send(sock, message, strlen(message), 0);
                         exit(0);
-                    }
-
-                    fseek(memoria, 0, SEEK_END);
-
-                    //puts(client_message_aux);
-                    fprintf(memoria, "%s" ,client_message_aux);
-
-                    printf("Carro Inserido!");
-
-                    message = "Carro registrado!";
-                    //fscanf(aux, %s, %s, %s, nome, marca, placa);
-                    free(client_message);
-                    send(sock, message, strlen(message), 0);
+                    }   
         }
 
         //Send the message back to client
